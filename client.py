@@ -3,9 +3,6 @@ import os
 import json
 
 import config
-from models import model_class
-
-model = model_class[config.MODEL](config.NUM_CLASSES)
 
 class Client:
     def __init__(self, out_dim, model, strategy='FedAvg'):
@@ -22,8 +19,8 @@ class Client:
     def on_message(self, client, userdata, msg):
         msg = json.loads(msg.payload)
         if msg['type'] == 'model':
-            model.load_state_dict(msg['state_dict'])
-            model.eval()
+            # model.load_state_dict(msg['state_dict'])
+            # model.eval()
             print('Model loaded successfully')
         elif msg['type'] == 'data':
             pass
