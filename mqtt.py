@@ -4,7 +4,7 @@ import json
 
 import config
 
-class Client:
+class MQTTClient:
     def __init__(self, out_dim, model, strategy='FedAvg'):
         self.client = mqtt.Client(config.CLIENT_ID)
         self.client.on_connect = self.on_connect
