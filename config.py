@@ -9,7 +9,7 @@ TOPIC_PREFIX = 'mqtt_fl/'
 # configuration of dataset and model -- MNIST and ResNet-50 as the example
 DATASET = 'MNIST'
 NUM_WORKERS = 4
-MODEL = 'resnet-50'
+MODEL = 'ResNet50'
 NUM_CLASSES = 10
 PRETRAIN = True
 DEVICE = 'mps'  # ['cpu', 'cuda', 'mps']

@@ -14,6 +14,5 @@ class ResNet50(nn.Module):
     def forward(self, x):
         return self.model(x)
 
-model_class = {
-    'resnet-50': ResNet50,
-}
+    def get_params(self) -> torch.Tensor:
+        return self.model.parameters()
