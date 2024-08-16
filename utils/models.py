@@ -16,3 +16,17 @@ class ResNet50(nn.Module):
 
     def get_params(self) -> torch.Tensor:
         return self.model.parameters()
+
+
+# resnet-18
+class ResNet18(nn.Module):
+    def __init__(self, out_dim=10):
+        super(ResNet18, self).__init__()
+        self.model = torch.hub.load('pytorch/vision:v0.6.0', 'resnet18', pretrained=config.PRETRAIN)
+        self.model.fc = nn.Linear(512, out_dim)
+
+    def forward(self, x):
+        return self.model(x)
+
+    def get_params(self) -> torch.Tensor:
+        return self.model.parameters()
