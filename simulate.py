@@ -24,13 +24,16 @@ def launch_client(
     # logger.info(f'Client {id} initialized successfully')
 
     # simulate the client -- to be modified later
-    pbar = tqdm(total=config.EPOCHS, desc=f'Client {id}', position=id, leave=False, colour=color)
+    pbar = tqdm(
+        total=config.EPOCHS, desc=config.colors[color]+'Client {id}',
+        position=id, leave=False, colour=config.hex_colors[color]
+    )
     for i in range(config.EPOCHS):
         # simulate the training process
-        # client.train(train_loader, 1)
-        # client.validate()
-        # client.test()
-        # client.communicate()
+        client.train(train_loader, 1)
+        client.validate()
+        client.test()
+        client.communicate()
         pbar.update(1)
     print("Client {} finished training".format(id), end='\b')
 
@@ -62,7 +65,7 @@ def simulate():
         p.start()
     for p in pool:
         p.join()
-    print("Simulation finished")
+    print("\n\nSimulation finished")
 
 
 if __name__ == '__main__':

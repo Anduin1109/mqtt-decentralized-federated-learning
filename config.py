@@ -37,6 +37,16 @@ colors = {
     'purple': '\033[35m',
     'cyan': '\033[36m',
     'white': '\033[37m',
-    'reset': '\033[0m',
+    'black': '\033[0m',
 }
-color_reset = '\033[0m'
+# hex color
+hex_colors = {
+    'red': '#FF0000',
+    'green': '#00FF00',
+    'yellow': '#FFFF00',
+    'blue': '#0000FF',
+    'purple': '#800080',
+    'cyan': '#00FFFF',
+    'white': '#FFFFFF',
+    'black': '#000000',
+}
