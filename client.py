@@ -1,31 +1,45 @@
 import config
-import dataset
-import models
-import dataset
+from utils import logger
 import mqtt
+from tqdm import tqdm
 
 
 # a client that holds the model, dataset, and mqtt client
 class Client:
     def __init__(
-            self, out_dim, model_name, strategy,
-            dataset_name, batch_size, num_workers=0, data=None, device="cpu"
+            self, net, optimizer, criterion, logger,
+            device: str = "cpu",
     ):
-        self.model = getattr(models, model_name)(out_dim=out_dim).to(device)
-        self.dataloader = dataset.get_dataloader(dataset_name, num_workers, batch_size, data)
-        self.mqtt = mqtt.MQTTClient(out_dim, self.model, strategy)
+        self.logger = logger
+        self.model = net.to(device)
+        self.criterion = criterion
+        self.optimizer = optimizer(self.model.parameters(), lr=config.LEARNING_RATE)
 
-    def train(self):
-        print("training...")
-        pass
+        self.mqtt = mqtt.MQTTClient()
+
+    def train(self, train_loader, epochs: int = config.EPOCHS):
+        #self.logger.info("training...")
+        for i in range(epochs):
+            #self.logger.info(f'Epoch {i + 1}/{config.EPOCHS}')
+            for data, target in train_loader:
+                data, target = data.to(config.DEVICE), target.to(config.DEVICE)
+                self.model.zero_grad()
+                output = self.model(data)
+                loss = self.criterion(output, target)
+                loss.backward()
+                self.optimizer.step()
+            self.validate()
 
     def validate(self):
-        print("validating...")
+        #self.logger.info("validating...")
         pass
 
     def test(self):
-        print("testing...")
+        #self.logger.info("testing...")
         pass
 
     def communicate(self):
+        pass
+
+    def save_model(self, dir_path: str = './checkpoints/'):
         pass

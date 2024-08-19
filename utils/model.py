@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torchvision import models
 
 import config
 
@@ -8,7 +9,7 @@ import config
 class ResNet50(nn.Module):
     def __init__(self, out_dim=10):
         super(ResNet50, self).__init__()
-        self.model = torch.hub.load('pytorch/vision:v0.6.0', 'resnet50', pretrained=config.PRETRAIN)
+        self.model = models.resnet50(weights = models.ResNet50_Weights.IMAGENET1K_V1)
         self.model.fc = nn.Linear(2048, out_dim)
 
     def forward(self, x):
@@ -22,7 +23,7 @@ class ResNet50(nn.Module):
 class ResNet18(nn.Module):
     def __init__(self, out_dim=10):
         super(ResNet18, self).__init__()
-        self.model = torch.hub.load('pytorch/vision:v0.6.0', 'resnet18', pretrained=config.PRETRAIN)
+        self.model = models.resnet18(weights = models.ResNet18_Weights.IMAGENET1K_V1)
         self.model.fc = nn.Linear(512, out_dim)
 
     def forward(self, x):

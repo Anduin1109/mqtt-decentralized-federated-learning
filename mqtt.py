@@ -4,8 +4,9 @@ import json
 
 import config
 
+
 class MQTTClient:
-    def __init__(self, out_dim, model, strategy='FedAvg'):
+    def __init__(self,):
         self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, config.CLIENT_ID)
         # self.client.on_connect = self.on_connect
         # self.client.on_message = self.on_message

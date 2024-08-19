@@ -1,4 +1,6 @@
 /.idea
-/data
 /__pycache__
+/data
+/checkpoints
 /基于MQTT协议的联邦学习.md
+/debug.py

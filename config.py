@@ -7,16 +7,16 @@ CLIENT_ID = 'client_' + str(random.randint(1, 1000))
 TOPIC_PREFIX = 'mqtt_fl/'
 
 # configuration of dataset and model -- MNIST and ResNet-50 as the example
-DATASET = 'MNIST'
+DATASET = 'CIFAR10'
 NUM_WORKERS = 4
-MODEL = 'ResNet50'
+MODEL = 'ResNet18'
 NUM_CLASSES = 10
 PRETRAIN = True
 DEVICE = 'mps'  # ['cpu', 'cuda', 'mps']
 
 # configuration of training
 BATCH_SIZE = 64
-EPOCHS = 30
+EPOCHS = 10
 LEARNING_RATE = 0.001
 MOMENTUM = 0.9
 WEIGHT_DECAY = 0.0005
@@ -26,4 +26,17 @@ OPTIMIZER = 'SGD'
 STRATEGY = 'FedAvg'
 
 # configuration of simulation
-NUM_CLIENTS = 10
+NUM_CLIENTS = 4
+
+# configuration of print color
+colors = {
+    'red': '\033[31m',
+    'green': '\033[32m',
+    'yellow': '\033[33m',
+    'blue': '\033[34m',
+    'purple': '\033[35m',
+    'cyan': '\033[36m',
+    'white': '\033[37m',
+    'reset': '\033[0m',
+}
+color_reset = '\033[0m'
