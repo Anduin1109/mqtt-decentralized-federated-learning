@@ -16,17 +16,18 @@ DEVICE = 'mps'  # ['cpu', 'cuda', 'mps']
 
 # configuration of training
 BATCH_SIZE = 64
-EPOCHS = 10
+EPOCHS = 50
 LEARNING_RATE = 0.001
 MOMENTUM = 0.9
 WEIGHT_DECAY = 0.0005
 OPTIMIZER = 'SGD'
+ACC_TOP_K = 3
 
 # configuration of federated learning
 STRATEGY = 'FedAvg'
 
 # configuration of simulation
-NUM_CLIENTS = 4
+NUM_CLIENTS = 1
 
 # configuration of print color
 colors = {

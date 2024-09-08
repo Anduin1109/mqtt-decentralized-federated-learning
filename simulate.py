@@ -7,6 +7,7 @@ import multiprocessing
 import torch
 from utils import model, dataset
 from utils.logger import get_logger
+from utils.strategies import FedAvg
 from time import sleep
 
 
@@ -24,18 +25,39 @@ def launch_client(
     # logger.info(f'Client {id} initialized successfully')
 
     # simulate the client -- to be modified later
+    pbar_desc = config.colors[color]+f'Client {id}'
     pbar = tqdm(
-        total=config.EPOCHS, desc=config.colors[color]+'Client {id}',
+        total=config.EPOCHS, desc=config.colors[color]+f'Client {id}',
         position=id, leave=False, colour=config.hex_colors[color]
     )
+
+    # simulate the training process
     for i in range(config.EPOCHS):
-        # simulate the training process
-        client.train(train_loader, 1)
-        client.validate()
-        client.test()
-        client.communicate()
+        # train
+        pbar.set_postfix_str('training...')
+        client.train(train_loader)
+        # for p in client.model.parameters():
+        #     print(type(p), type(p.data), p.data)
+        #     print(FedAvg([p.data, torch.zeros_like(p.data)]))
+
+        # validate
+        pbar.set_postfix_str('validating...')
+        metrics = client.validate(val_loader, k=config.ACC_TOP_K)
+        # display the metrics
+        val_loss, val_map_10 = metrics['loss'], metrics['map@k']
+        pbar.set_description_str(
+            pbar_desc +
+            f' (loss {val_loss:.4f} | map@{config.ACC_TOP_K} {val_map_10*100:.2f}%)'
+        )
+
+        # check mqtt messages
+        pbar.set_postfix_str(f'communicating...')
+        client.start_communicate()
+
         pbar.update(1)
-    print("Client {} finished training".format(id), end='\b')
+
+    pbar.close()
+    print(f"Client {id} finished training".format(id), end='\b')
 
 
 def simulate():
@@ -54,7 +76,10 @@ def simulate():
         is_train=False
     )
 
-    print(colors)
+    if config.NUM_CLIENTS==1:
+        train_loaders = [train_loaders]
+        val_loaders = [val_loaders]
+
     pool = []
     for i in range(config.NUM_CLIENTS):
         p = multiprocessing.Process(

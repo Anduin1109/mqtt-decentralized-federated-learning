@@ -43,7 +43,7 @@ def get_dataloader(
     """
     if data is None:
         dataset = getattr(datasets, dataset_name)(
-            root='./data',
+            root='./data',  # .gitignore the data folder
             transform=torchvision.transforms.ToTensor(),
             train=is_train,
             download=True
