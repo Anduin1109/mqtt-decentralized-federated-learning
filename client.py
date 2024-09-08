@@ -17,7 +17,7 @@ class Client:
 
         self.mqtt = mqtt.MQTTClient()
 
-    def train(self, train_loader, epochs: int = config.EPOCHS):
+    def train(self, train_loader, epochs: int = config.EPOCHS, validate: bool = True):
         #self.logger.info("training...")
         for i in range(epochs):
             #self.logger.info(f'Epoch {i + 1}/{config.EPOCHS}')
@@ -28,7 +28,11 @@ class Client:
                 loss = self.criterion(output, target)
                 loss.backward()
                 self.optimizer.step()
-            self.validate()
+
+            if validate:
+                self.validate()
+
+            # upload model weights to the server
 
     def validate(self):
         #self.logger.info("validating...")

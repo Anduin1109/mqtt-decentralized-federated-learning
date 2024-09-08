@@ -6,8 +6,8 @@ import config
 
 
 class MQTTClient:
-    def __init__(self,):
-        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, config.CLIENT_ID)
+    def __init__(self, client_id: str = config.CLIENT_ID):
+        self.client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, client_id)
         # self.client.on_connect = self.on_connect
         # self.client.on_message = self.on_message
         # self.client.connect(config.SERVER_ADDR, config.SERVER_PORT, 60)
