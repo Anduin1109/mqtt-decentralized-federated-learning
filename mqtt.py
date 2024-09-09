@@ -10,8 +10,9 @@ def _on_connect(client, userdata, flags, rc):
 
 
 def _on_message(client, userdata, msg):
+    topic = msg.topic
     data = json.loads(msg.payload.decode('utf-8'))
-    print(type(data), len(data), data)
+    print(type(data), data.shape, data, topic)
 
 
 
@@ -34,9 +35,10 @@ class MQTTClient:
     def unsubscribe(self, topic: str):
         self.client.unsubscribe(topic)
 
-    def publish(self, topic: str, payload: dict):
-        res = self.client.publish(topic, json.dumps(payload))
-        return res
+    def publish(self, topic: str, payload: dict, qos: int = 0):
+        for key, value in payload.items():
+            rc = self.client.publish(topic + key, json.dumps(value.tolist()), qos=qos)
+            print(f"Published {topic+key} with result code {rc}")
 
     def start_listening(self, broker_addr: str = config.SERVER_ADDR, port: int = config.SERVER_PORT):
         self.connect(broker_addr, port)

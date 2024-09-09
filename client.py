@@ -15,8 +15,8 @@ def map_at_k(output, target, k) -> float:
     predicted = predicted.t()
     correct = predicted.eq(target.view(1, -1).expand_as(predicted))
     correct = correct[:k].reshape(-1).float().sum(0, keepdim=True)
-    map_10 = correct.mul_(100.0 / config.BATCH_SIZE)
-    return map_10.item()
+    map_k = correct.mul_(100.0 / config.BATCH_SIZE)
+    return map_k.item()
 
 
 # a client that holds the model, dataset, and mqtt client
@@ -32,12 +32,21 @@ class Client:
 
         self.mqtt = mqtt.MQTTClient()
 
-    def get_params(self):
+    def initialize_mqtt(
+            self,
+            addr: str = config.SERVER_ADDR,
+            port: int = config.SERVER_PORT,
+            topic: str = config.TOPIC_PREFIX,
+    ):
+        self.mqtt.connect(broker_addr=addr, port=port)
+        self.mqtt.subscribe(topic)
+
+    def get_params(self) -> dict[str, torch.Tensor]:
         return self.model.state_dict()
 
     def train(self, train_loader):
-        #self.logger.info("training...")
-        #self.logger.info(f'Epoch {i + 1}/{config.EPOCHS}')
+        # self.logger.info("training...")
+        # self.logger.info(f'Epoch {i + 1}/{config.EPOCHS}')
         for data, target in train_loader:
             data, target = data.to(config.DEVICE), target.to(config.DEVICE)
             self.model.zero_grad()
@@ -72,7 +81,7 @@ class Client:
 
     def test(self, test_loader, k: int = 5) -> Dict[str, float]:
         losses = []
-        accs = []
+        self.acc_list = []
         for data, target in test_loader:
             data, target = data.to(config.DEVICE), target.to(config.DEVICE)
             output = self.model(data)
@@ -81,15 +90,15 @@ class Client:
             losses.append(loss.item())
             # accuracy@k
             acc = map_at_k(output, target, k)
-            accs.append(acc)
+            self.acc_list.append(acc)
 
         return {
             "loss": sum(losses) / len(losses),
-            "map@k": sum(accs) / len(accs),
+            "map@k": sum(self.acc_list) / len(self.acc_list),
         }
 
-    def start_communicate(self):
-        sleep(0.7)
+    def start_communicate(self, topic: str = config.TOPIC_PREFIX, qos: int = 0):
+        self.mqtt.publish(topic, self.get_params(), qos=qos)
 
     def save_model(self, dir_path: str = './checkpoints/'):
         sleep(0.7)

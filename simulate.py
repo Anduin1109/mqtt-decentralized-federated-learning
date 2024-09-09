@@ -32,6 +32,7 @@ def launch_client(
     )
 
     # simulate the training process
+    client.initialize_mqtt(config.SERVER_ADDR, config.SERVER_PORT, config.TOPIC_PREFIX)
     for i in range(config.EPOCHS):
         # train
         pbar.set_postfix_str('training...')
@@ -44,10 +45,10 @@ def launch_client(
         pbar.set_postfix_str('validating...')
         metrics = client.validate(val_loader, k=config.ACC_TOP_K)
         # display the metrics
-        val_loss, val_map_10 = metrics['loss'], metrics['map@k']
+        val_loss, val_map_k = metrics['loss'], metrics['map@k']
         pbar.set_description_str(
             pbar_desc +
-            f' (loss {val_loss:.4f} | map@{config.ACC_TOP_K} {val_map_10*100:.2f}%)'
+            f' (loss {val_loss:.4f} | map@{config.ACC_TOP_K} {val_map_k:.2f}%)'
         )
 
         # check mqtt messages
