@@ -3,7 +3,7 @@ import random
 # configuration of MQTT
 SERVER_ADDR = '127.0.0.1'
 SERVER_PORT = 1883
-CLIENT_ID = 'client_' + str(random.randint(1, 1000))
+CLIENT_ID = lambda: 'client_' + str(random.randint(1, 1000))
 TOPIC_PREFIX = 'mqtt_fl/'
 
 # configuration of dataset and model -- MNIST and ResNet-50 as the example
@@ -12,7 +12,7 @@ NUM_WORKERS = 4
 MODEL = 'ResNet18'
 NUM_CLASSES = 10
 PRETRAIN = True
-DEVICE = 'mps'  # ['cpu', 'cuda', 'mps']
+DEVICE = 'cuda'  # ['cpu', 'cuda', 'mps']
 
 # configuration of training
 BATCH_SIZE = 64

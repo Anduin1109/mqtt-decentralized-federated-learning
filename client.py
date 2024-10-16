@@ -2,7 +2,9 @@ from typing import Dict
 
 import torch
 
+import numpy as np
 import config
+import json
 from utils import logger
 import mqtt
 from tqdm import tqdm
@@ -38,11 +40,17 @@ class Client:
             port: int = config.SERVER_PORT,
             topic: str = config.TOPIC_PREFIX,
     ):
-        self.mqtt.connect(broker_addr=addr, port=port)
-        self.mqtt.subscribe(topic)
+        pass
 
-    def get_params(self) -> dict[str, torch.Tensor]:
-        return self.model.state_dict()
+    def get_params(self, prop=0.1) -> dict[str, torch.Tensor]:
+        """
+        Get the parameters of the model by the proportion
+        :param prop:
+        :return:
+        """
+        keys = list(self.model.state_dict().keys())
+        keys = np.random.choice(keys, int(len(keys) * prop), replace=False)
+        return {key: self.model.state_dict()[key] for key in keys}
 
     def train(self, train_loader):
         # self.logger.info("training...")
@@ -98,7 +106,9 @@ class Client:
         }
 
     def start_communicate(self, topic: str = config.TOPIC_PREFIX, qos: int = 0):
-        self.mqtt.publish(topic, self.get_params(), qos=qos)
+        print("num of params:", len(self.get_params()))
+        for key, value in self.get_params().items():
+            rc = self.mqtt.publish(topic+key, {key: value.cpu().numpy().tolist()}, qos=qos)
 
     def save_model(self, dir_path: str = './checkpoints/'):
-        sleep(0.7)
+        torch.save(self.model.state_dict(), dir_path + 'model.pth')
