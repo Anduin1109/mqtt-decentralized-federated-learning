@@ -1,6 +1,5 @@
 /.idea
 /__pycache__
-/utils/__pycache__
 /logs
 /data
 /checkpoints
