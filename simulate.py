@@ -63,6 +63,7 @@ def launch_client(
         val_loss, val_map_k = metrics['loss'], metrics['map@k']
         #print(val_loss, val_map_k)
         writer.add_scalar('Loss/val', val_loss, i)
+        writer.add_scalar(f'MAP@{config.ACC_TOP_K}/val', val_map_k, i)
 
         pbar.update(1)
 
