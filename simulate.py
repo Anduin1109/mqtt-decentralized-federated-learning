@@ -5,16 +5,20 @@ import logging
 import random
 import multiprocessing
 import torch
-from utils import model, dataset
+from utils import model, dataset, util
 from utils.logger import get_logger
+from torch.utils.tensorboard import SummaryWriter
 from utils.strategies import FedAvg
 from time import sleep
+
+
 
 
 def launch_client(
         id: int, color='reset',
         train_loader=None, val_loader=None, test_loader=None
 ):
+    util.set_seed(id)
     # initialize the model, client, and logger
     logger = get_logger(f'client_{id}', color=color)
     net = model.ResNet18(out_dim=config.NUM_CLASSES).to(config.DEVICE)
@@ -23,6 +27,7 @@ def launch_client(
         optimizer=getattr(torch.optim, config.OPTIMIZER), criterion=torch.nn.CrossEntropyLoss(),
     )
     # logger.info(f'Client {id} initialized successfully')
+    writer = SummaryWriter(f'logs/client_{id}')
 
     # simulate the client -- to be modified later
     pbar_desc = config.colors[color]+f'Client {id}'
@@ -37,10 +42,6 @@ def launch_client(
         # train
         pbar.set_postfix_str('training...')
         client.train(train_loader)
-        # for p in client.model.parameters():
-        #     print(type(p), type(p.data), p.data)
-        #     print(FedAvg([p.data, torch.zeros_like(p.data)]))
-
         # validate
         pbar.set_postfix_str('validating...')
         metrics = client.validate(val_loader, k=config.ACC_TOP_K)
@@ -53,7 +54,15 @@ def launch_client(
 
         # check mqtt messages
         pbar.set_postfix_str(f'communicating...')
-        client.start_communicate()
+        client.start_communicate(num_samples=len(val_loader.dataset))
+        pbar.set_postfix_str(f'aggregating...')
+        client.aggregate()
+
+        metrics = client.validate(val_loader, k=config.ACC_TOP_K)
+        # display the metrics
+        val_loss, val_map_k = metrics['loss'], metrics['map@k']
+        #print(val_loss, val_map_k)
+        writer.add_scalar('Loss/val', val_loss, i)
 
         pbar.update(1)
 

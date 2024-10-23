@@ -10,7 +10,8 @@ import mqtt
 from tqdm import tqdm
 from time import sleep
 from sklearn.metrics import accuracy_score, roc_auc_score
-
+from utils import strategies
+from collections import OrderedDict
 
 def map_at_k(output, target, k) -> float:
     _, predicted = output.topk(k, 1, True, True)
@@ -40,7 +41,7 @@ class Client:
             port: int = config.SERVER_PORT,
             topic: str = config.TOPIC_PREFIX,
     ):
-        pass
+        self.mqtt.subscribe(topic+'#')
 
     def get_params(self, prop=0.1) -> dict[str, torch.Tensor]:
         """
@@ -105,10 +106,52 @@ class Client:
             "map@k": sum(self.acc_list) / len(self.acc_list),
         }
 
-    def start_communicate(self, topic: str = config.TOPIC_PREFIX, qos: int = 0):
-        print("num of params:", len(self.get_params()))
+    def start_communicate(self, num_samples: int, topic: str = config.TOPIC_PREFIX, qos: int = 0):
+        #print("num of params:", len(self.get_params()))
         for key, value in self.get_params().items():
-            rc = self.mqtt.publish(topic+key, {key: value.cpu().numpy().tolist()}, qos=qos)
+            # to be edited as: [value, num_samples, performance]
+            rc = self.mqtt.publish(topic+key, {key: [value.cpu().numpy().tolist(), num_samples]}, qos=qos)
+
+    def aggregate(self):
+        # mutex lock
+        self.mqtt.semaphore.acquire()
+        # aggregate the received parameters
+        # 1. reconstruct the parameter dict
+        param_dicts = {}    # {key: [value1, value2, ...]}
+        num_samples = {}
+        for key, value in self.mqtt.stored_msg.items():
+            key = key.split('/')[-1]
+            num_sample = value[0][1]
+            value = value[0][0]
+            if key in param_dicts:
+                param_dicts[key].append(torch.tensor(value))
+            else:
+                param_dicts[key] = [torch.tensor(value)]
+            if key in num_samples:
+                num_samples[key].append(num_sample)
+            else:
+                num_samples[key] = [num_sample]
+        # 2. use federated learning algorithm (keep the results in state_dict)
+        state_dict = {}
+        for key in param_dicts:
+            param_list = param_dicts[key]
+            num_sample_list = num_samples[key]
+            param = strategies.aggregate(param_list, weights=num_sample_list)
+            state_dict[key] = param
+        # 3. update the model parameters
+        key_list = list(self.model.state_dict().keys())
+        for i, id in enumerate(key_list):
+            if i not in state_dict:
+                # keep this part unchanged
+                state_dict[id] = self.model.state_dict()[id].data
+        state_dict = OrderedDict(state_dict)
+        #print(self.model.state_dict().keys())
+        self.model.load_state_dict(state_dict, strict=True)
+
+        # clear the stored messages, and release the semaphore
+        self.mqtt.stored_msg = {}
+        self.mqtt.semaphore.release()
+
 
     def save_model(self, dir_path: str = './checkpoints/'):
         torch.save(self.model.state_dict(), dir_path + 'model.pth')

@@ -11,7 +11,7 @@ def _on_message(client, userdata, msg):
     topic = msg.topic
     data = json.loads(msg.payload.decode('utf-8'))
     param_name = topic.split('/')[-1]
-    print(type(data), np.array(data).shape, data, topic, param_name)
+    print(type(data), np.array(data).shape, topic, param_name)
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, config.CLIENT_ID())
 client.on_connect = _on_connect

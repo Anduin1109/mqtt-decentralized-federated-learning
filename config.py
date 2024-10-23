@@ -15,7 +15,7 @@ PRETRAIN = True
 DEVICE = 'cuda'  # ['cpu', 'cuda', 'mps']
 
 # configuration of training
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 EPOCHS = 50
 LEARNING_RATE = 0.001
 MOMENTUM = 0.9
@@ -27,7 +27,7 @@ ACC_TOP_K = 3
 STRATEGY = 'FedAvg'
 
 # configuration of simulation
-NUM_CLIENTS = 1
+NUM_CLIENTS = 2
 
 # configuration of print color
 colors = {
